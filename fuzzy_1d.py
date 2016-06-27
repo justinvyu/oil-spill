@@ -1,5 +1,5 @@
 '''
-Monodimensional C-means (inspired by fuzzy.py with 2 variables)
+Monodimensional FCM (inspired by fuzzy.py with 2 variables)
 '''
 
 import numpy as np
@@ -28,14 +28,16 @@ for i, (mu, sigma) in enumerate(zip(centroids, sigmas)):
 
 # creating histogram
 
+fig, ax = plt.subplots()
+
 binwidth = 1
 clusters = 3
 m = 2 # 1 <= m < inf
 
-counts, bins, patches = plt.hist(x_pts, bins=range(int(np.amin(x_pts)),
+counts, bins, patches = ax.hist(x_pts, bins=range(int(np.amin(x_pts)),
                                                    int(np.amax(x_pts)) + 1, 1))
 
-# apply learning algorithm, ε = 0.005
+# apply learning algorithm, e = 0.005
 # data param is a [S, N] matrix
 data = x_pts.reshape(1, x_pts.size)
 cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(data, clusters, m,
@@ -47,6 +49,7 @@ bin_counts = np.zeros((clusters, bins.size))
 # returns array with cluster index j for highest "weighted" DOM
 degree_of_membership = np.argmax(u, axis=0)
 
+#
 for j in range(clusters):
     indices = np.array([])
 
@@ -55,17 +58,19 @@ for j in range(clusters):
         # append the index of the bin with highest DOM
         indices = np.append(indices, np.digitize(pt, bins) - 1)
 
-    print(indices)
-    print("\n")
-
     for index in indices:
         bin_counts[j][index] += 1 # tally bin counts
 
-print(bin_counts)
+    ax.annotate("c(" + str(j) + ")=%.2f" % cntr[j], xy=(cntr[j], 0),
+                xytext=(0, -30), textcoords='offset points', va='top', ha='center')
 
-colors = ['r', 'g', 'b']
+# visualize cluster separation
+colors = ['red', 'green', 'blue']
 
-for pt in cntr:
-    print(pt)
+for i, cluster_count in enumerate(bin_counts):
+    for patch, _bin in zip(patches, cluster_count):
+        if int(_bin) is not 0:
+            patch.set_facecolor(colors[i])
 
-# plt.show()
+plt.subplots_adjust(bottom=0.15)
+plt.show()
