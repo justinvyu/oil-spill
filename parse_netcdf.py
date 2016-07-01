@@ -67,7 +67,8 @@ def parse(filename):
 
     np_data = np.asarray(data_list).reshape(len(data_list), 1)
 
-    fuzzy_1d.visualize_fuzzy(np_data, 2)
+    cluster, cluster_data = fuzzy_1d.isolate_cluster(np_data, 2)
+    fuzzy_1d.visualize_fuzzy(np_data, cluster_data)
 
     # y, x, _ = plt.hist(data_list, bins=range(int(np.amin(np_data)), int(np.amax(np_data)) + binwidth, binwidth))
 

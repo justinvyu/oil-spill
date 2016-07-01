@@ -7,55 +7,21 @@ import matplotlib.pyplot as plt
 import skfuzzy as fuzz
 from matplotlib.ticker import FormatStrFormatter
 
-def visualize_fuzzy(_data, nc=2):
+def visualize_fuzzy(_data, cluster_data):
     # creating histogram
-
     fig, ax = plt.subplots()
 
     binwidth = 1
     counts, bins, patches = ax.hist(_data, bins=range(int(np.amin(_data)),
                                                       int(np.amax(_data)) + binwidth, binwidth))
 
-    # apply learning algorithm, e = 0.005
-    # data param is a [S, N] matrix
-    data = _data.reshape(1, _data.size)
-    cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(data, nc, 2,
-                                                     error=0.005, maxiter=1000)
-
-    for pt in cntr:
-        print(pt)
-
-    # used to track
-    # bin_counts = np.zeros((nc, bins.size))
-
-    # returns array with cluster index j for highest "weighted" DOM
-    degree_of_membership = np.argmax(u, axis=0)
-
-    # for j in range(nc):
-    #     indices = np.array([])
-    #
-    #     # separate all points that belong to the cluster j
-    #     for pt in _data[degree_of_membership == j]:
-    #         # append the index of the bin with highest DOM
-    #         indices = np.append(indices, np.digitize(pt, bins) - 1)
-    #
-    #     for index in indices:
-    #         bin_counts[j][index] += 1 # tally bin counts
-    #
-    #     ax.annotate("c(" + str(j) + ")=%.2f" % cntr[j], xy=(cntr[j], 0),
-    #                 xytext=(0, -30), textcoords='offset points', va='top', ha='center')
+    # ax.annotate("c(" + str(j) + ")=%.2f" % cntr[j], xy=(cntr[j], 0),
+    #             xytext=(0, -30), textcoords='offset points', va='top', ha='center')
 
     bin_counts = np.zeros((1, bins.size))
 
-    dark_cluster = np.argmin(cntr)
-
-    indices = np.array([])
-    points = np.array(data[0][degree_of_membership == dark_cluster])
-
     # index = (curr - min) / bin_count
-    indices = np.floor((points - np.amin(points)) / binwidth)
-
-    print(indices)
+    indices = np.floor((cluster_data - np.amin(cluster_data)) / binwidth)
 
     for index in indices:
         bin_counts[0][index] += 1
@@ -70,6 +36,25 @@ def visualize_fuzzy(_data, nc=2):
 
     plt.subplots_adjust(bottom=0.15)
     plt.show()
+
+def isolate_cluster(_data, nc=2):
+    # apply learning algorithm, e = 0.005
+    # data param is a [S, N] matrix
+    data = _data.reshape(1, _data.size)
+    cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(data, nc, 2,
+                                                     error=0.005, maxiter=1000)
+
+    # used to track
+    # returns array with cluster index j for highest "weighted" DOM
+    degree_of_membership = np.argmax(u, axis=0)
+
+    dark_cluster = np.argmin(cntr)
+    points = np.array(data[0][degree_of_membership == dark_cluster])
+
+    return dark_cluster, points
+
+# def threshold():
+    # print("std=" + str(np.std(points)), np.amin(cntr) - np.std(points))
 
 if __name__ == "__main__":
     # define 3 centroids (to generate random points around)
@@ -91,4 +76,5 @@ if __name__ == "__main__":
         # pass in tuple, initialize 200 vals in _data
         x_pts = np.hstack((x_pts, np.random.standard_normal(200) * sigma + mu))
 
-    visualize_fuzzy(_data, 3)
+    cluster, cluster_data = isolate_cluster(x_pts, 3)
+    visualize_fuzzy(x_pts, cluster_data)
