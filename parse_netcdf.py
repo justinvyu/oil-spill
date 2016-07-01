@@ -9,15 +9,12 @@ import sys
 import numbers
 import time
 
-import datetime as dt
 import numpy as np
-from scipy import stats
 import skfuzzy as fuzz
 import matplotlib.pyplot as plt
-import plotly.plotly as py
 from netCDF4 import Dataset
 
-from collections import Counter
+import fuzzy_1d
 
 # See: http://schubert.atmos.colostate.edu/~cslocum/code/netcdf_example.py
 def ncdump(nc_fid, verb=True):
@@ -68,20 +65,18 @@ def parse(filename):
 
     # imgplot = plt.imshow(data)
 
-    binwidth = 3
-
     np_data = np.asarray(data_list).reshape(len(data_list), 1)
 
-    y, x, _ = plt.hist(data_list, bins=range(int(np.amin(np_data)), int(np.amax(np_data)) + binwidth, binwidth))
+    fuzzy_1d.visualize_fuzzy(np_data, 2)
+
+    # y, x, _ = plt.hist(data_list, bins=range(int(np.amin(np_data)), int(np.amax(np_data)) + binwidth, binwidth))
 
     # hist = plt.plot(x, y, 'ro')
 
-    cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(np_data, 2, 2, error=0.005, maxiter=1000, init=None)
-    for pt in cntr:
-        print(pt, pt.size)
-    print(fpc)
-
-    plt.show()
+    # cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(np_data, 2, 2, error=0.005, maxiter=1000, init=None)
+    # for pt in cntr:
+    #     print(pt, pt.size)
+    # print(fpc)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
