@@ -42,10 +42,10 @@ def visualize_fuzzy(_data, cluster_data, img_path):
 
     plt.subplots_adjust(bottom=0.15)
 
+    # color pixels in jpg
     img = Image.open(img_path)
 
     p = img.load()
-
     x_pts = [i.x for i in cluster_data]
     y_pts = [i.y for i in cluster_data]
 
@@ -79,11 +79,12 @@ def threshold(mu, cluster_data):
     sigma_data = np.array([i.sigma0 for i in cluster_data])
 
     std = np.std(sigma_data)
+
     threshold = mu - 1.5 * std # 1 std. away from mu
+    threshold_vals = [i for i in cluster_data if i.sigma0 <= threshold]
 
-    print(threshold)
-
-    return threshold, [i for i in cluster_data if i.sigma0 <= threshold]
+    print(std, sigma_data, threshold, threshold_vals)
+    return threshold, threshold_vals
 
 if __name__ == "__main__":
     # define 3 centroids (to generate random points around)

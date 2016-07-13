@@ -29,66 +29,32 @@ def parse(filename, jpg):
     nc_attrs, nc_dims, nc_vars = ncdump(nc_dataset)
 
     data = nc_dataset.variables["Sigma0_VV_dB"][:].T
-    data_list = []
-
-    # data_list = [i for i in data if isinstance(i, numbers.Number) and i > 10**-3]
-
-    # for i in xrange(0, len(data) - 2, 2):
-    #     for j in xrange(0, len(data[i]) - 2, 2):
-    #
-    #         tl = data[i][j]
-    #         tr = data[i][j + 1]
-    #         bl = data[i + 1][j]
-    #         br = data[i + 1][j + 1]
-    #
-    #         pixels = []
-    #
-    #         if isinstance(tl, numbers.Number) and tl > 10**-3:
-    #             pixels.append(tl)
-    #         if isinstance(tr, numbers.Number) and tr > 10**-3:
-    #             pixels.append(tr)
-    #         if isinstance(bl, numbers.Number) and bl > 10**-3:
-    #             pixels.append(bl)
-    #         if isinstance(br, numbers.Number) and br > 10**-3:
-    #             pixels.append(br)
-    #
-    #         if len(pixels) == 0:
-    #             continue
-    #
-    #         avg = sum(pixels) / len(pixels) # 2x2 average
-    #
-    #         data_list.append(avg)
 
     # mode = 50.5-52.5
 
-    for x in xrange(0, len(data)):
-        for y in xrange(0, len(data[x])):
-            pixel = Pixel(x, y, data[x][y])
-            if isinstance(pixel.sigma0, numbers.Number) and pixel.sigma0 > 10**-3:
-                data_list.append(pixel)
+    # for (x, y) in zip(range(len(data)), range(len(data[x]))):
+    #     # val = data[x][y]
+    #     # if isinstance(val, numbers.Number) and val > 0.003:
+    #     #     data_list.append(val)
+    #
+    #     pixel = Pixel(x, y, data[x][y])
+    #     if isinstance(pixel.sigma0, numbers.Number) and pixel.sigma0 > 10**-3:
+    #         data_list.append(pixel)
 
-    # imgplot = plt.imshow(data)
+    # holy shit
 
+    data_list = [el for sublist in [[Pixel(x, y, val) for y, val in enumerate(_data) if isinstance(val, numbers.Number) and abs(val) > 0.003] for x, _data in enumerate(data)] for el in sublist]
     np_data = np.asarray(data_list).reshape(1, len(data_list))
 
-    # np.asarray(data_list).reshape(len(data_list), 1)
+    # np_data = data.reshape(1, data.size)
 
     mu, cluster_data = fuzzy_1d.isolate_cluster(np_data, 2)
 
     threshold, threshold_data = fuzzy_1d.threshold(mu, cluster_data)
     fuzzy_1d.visualize_fuzzy(np_data, threshold_data, jpg_img)
 
-    # y, x, _ = plt.hist(data_list, bins=range(int(np.amin(np_data)), int(np.amax(np_data)) + binwidth, binwidth))
-
-    # hist = plt.plot(x, y, 'ro')
-
-    # cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(np_data, 2, 2, error=0.005, maxiter=1000, init=None)
-    # for pt in cntr:
-    #     print(pt, pt.size)
-    # print(fpc)
-
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         sys.stderr.write("Usage: parse_netcdf.py <file> <img.jpg>\n")
         sys.exit(1)
 
