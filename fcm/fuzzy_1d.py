@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import skfuzzy as fuzz
 from matplotlib.ticker import FormatStrFormatter
 from PIL import Image
-
+from sklearn import cluster
 from pixel import Pixel
 
 def visualize_fuzzy(_data, cluster_data, img_path):
@@ -48,10 +48,10 @@ def visualize_fuzzy(_data, cluster_data, img_path):
     p = img.load()
     x_pts = [i.x for i in cluster_data]
     y_pts = [i.y for i in cluster_data]
+    thresh_max = np.amax(sigma_data_cluster)
 
-    for x, y in zip(x_pts, y_pts):
-        if x < img.size[0] and y < img.size[1]:
-            p[x, y] = (255, 0, 0)
+    for i, (x, y, sigma) in enumerate(zip(x_pts, y_pts, sigma_data_cluster)):
+        p[x, y] = (255, 0, 0)
 
     img.show()
     plt.show()
@@ -80,10 +80,9 @@ def threshold(mu, cluster_data):
 
     std = np.std(sigma_data)
 
-    threshold = mu - 1.5 * std # 1 std. away from mu
+    threshold = mu - 2 * std # 1 std. away from mu
     threshold_vals = [i for i in cluster_data if i.sigma0 <= threshold]
 
-    print(std, sigma_data, threshold, threshold_vals)
     return threshold, threshold_vals
 
 if __name__ == "__main__":
