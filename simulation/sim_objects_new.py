@@ -11,6 +11,8 @@ from nn import Trainer
 from ga import *
 from sda import *
 
+import pickle
+
 class ObjectType(Enum):
     spill = 0
     lookalike = 1
@@ -249,10 +251,18 @@ class Lookalike(OceanObject):
 
 if __name__ == "__main__":
 
-    r.seed(123456)
+    use_cache = True
+    cache = None
 
-    training = [OilSpill() for i in range(200)]
-    training.extend([Lookalike() for i in range(400)])
+    newfile = "cache.pk"
+
+    if use_cache is True:
+        with open(newfile, 'rb') as fi:
+            cache = pickle.load(fi)
+
+    r.seed(50)
+    training = [OilSpill() for i in range(400)]
+    training.extend([Lookalike() for i in range(1000)])
     r.shuffle(training)
 
     train_matrix_x = np.array([sample.vectorize() for sample in training]).reshape((-1, Trainer.n_features))
@@ -268,8 +278,8 @@ if __name__ == "__main__":
 
     trainer = Trainer(train_matrix_x, train_matrix_y, test_matrix_x, test_matrix_y)
 
-    # trainer.train()
-    # print(trainer.percent_accuracy())
+    # trainer.train([1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1])
+    # print(trainer.percent_accuracy([1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1]))
 
     # sda = SdA(dims=[12, 11], activations=['relu', 'relu'], epoch=[1000, 500],
     #           loss='cross-entropy', lr=0.007, batch_size=50, print_step=200)
@@ -277,5 +287,15 @@ if __name__ == "__main__":
     # sda.fit(train_matrix_x)
 
     ga = GA(trainer)
-    ga.evolve()
+    generation, output = 0, None
+    if use_cache:
+        ga.history = cache[2]
+        generation, output = ga.evolve(cache[1], cache[0])
+    else:
+        generation, output = ga.evolve()
+
+    dump = [generation, output, ga.history]
+    with open(newfile, 'wb') as fi:
+        pickle.dump(dump, fi)
+
     ga.graph()
