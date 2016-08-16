@@ -27,7 +27,7 @@ class Trainer(object):
     dropout = 0.75
 
     def __init__(self, training_input, training_labels, testing_input, testing_labels,
-                learning_rate=6e-5, training_iters=2000) :
+                learning_rate=4e-5, training_iters=2000) :
 
         self.training_input = training_input
         self.training_labels = training_labels

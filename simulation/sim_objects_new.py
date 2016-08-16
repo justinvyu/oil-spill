@@ -254,7 +254,7 @@ if __name__ == "__main__":
     use_cache = True
     cache = None
 
-    newfile = "cache.pk"
+    newfile = "02_cache.pk"
 
     if use_cache is True:
         with open(newfile, 'rb') as fi:
@@ -278,8 +278,25 @@ if __name__ == "__main__":
 
     trainer = Trainer(train_matrix_x, train_matrix_y, test_matrix_x, test_matrix_y)
 
-    # trainer.train([1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1])
-    # print(trainer.percent_accuracy([1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1]))
+    # trainer.train()
+    #
+    # positive = []
+    # print("ONEHOTVECTORS -------------")
+    # for i in range(len(test_matrix_y)):
+    #     if test_matrix_y[i][0] == 1:
+    #         positive.append(i)
+    #
+    # accuracy, correct = trainer.percent_accuracy()
+    #
+    # print("Correct Prediction? -------------")
+    # count = 0.0
+    # for index in positive:
+    #     if correct[index] == True:
+    #         print(correct[index])
+    #         count += 1.0
+    #
+    # print(count / len(correct))
+    # print(accuracy)
 
     # sda = SdA(dims=[12, 11], activations=['relu', 'relu'], epoch=[1000, 500],
     #           loss='cross-entropy', lr=0.007, batch_size=50, print_step=200)

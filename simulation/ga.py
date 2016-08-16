@@ -8,11 +8,13 @@ from copy import deepcopy
 
 import random as random
 import matplotlib.pyplot as plt
+from scipy import stats, integrate
 
 import math
 from enum import Enum
 
 from nn import Trainer
+import seaborn as sns
 
 class Chromosome(object):
 
@@ -66,7 +68,7 @@ class GA(object):
                     produce a child
     """
 
-    def __init__(self, nn, n_gens=30, gen_step=10, pop_size=20, cross_rate=0.9,
+    def __init__(self, nn, n_gens=70, gen_step=10, pop_size=20, cross_rate=0.9,
                  pool_size=2, elitism_length=2) :
 
         self.population = np.array([ Chromosome(nn.n_features) for i in range(pop_size) ])
@@ -114,6 +116,21 @@ class GA(object):
         print("Finished training...")
 
         accuracy = self.nn.percent_accuracy(chromosome.vector)[0]
+
+        # positive = []
+        # for i in range(len(self.nn.testing_labels)):
+        #     if self.nn.testing_labels[i][0] == 1:
+        #         positive.append(i)
+
+        # accuracy, correct = self.nn.percent_accuracy()
+
+        # count = 0.0
+        # for index in positive:
+        #     if correct[index] == True:
+        #         count += 1.0
+
+        # true_positive_rate = count / len(correct)
+
         error_rate = 1.0 - accuracy
         fitness = np.sum(chromosome.vector) + (np.exp((error_rate - t) / m) - t) / (np.e - 1)
 
@@ -276,12 +293,15 @@ class GA(object):
 
         # Random generation
         if child_1.fitness == child_2.fitness:
-            if generation < 20:
-                print("Randomly generating children --------\n")
+            # if generation < 20:
+            #     print("Randomly generating both children --------\n")
+            #     child_1 = Chromosome(Trainer.n_features)
+            #     child_2 = Chromosome(Trainer.n_features)
+            if generation < 30:
+                print("Randomly generating one child --------\n")
                 child_2 = Chromosome(Trainer.n_features)
             else:
-                while child_1.fitness == child_2.fitness:
-                    child_2 = self.random_chromosome()
+                child_2 = self.random_chromosome()
 
         child_1.replace_range(female, locus_left, locus_right)
         child_2.replace_range(male, locus_left, locus_right)
@@ -309,10 +329,19 @@ class GA(object):
     def graph(self) :
         # accuracies = [[individual.accuracy for individual in generation] for generation in self.history]
         # median_accuracies = [np.median(x) for x in accuracies]
+        sns.set_style("darkgrid")
 
         average_accuracies = [sum([individual.accuracy for individual in generation]) / len(generation) for generation in self.history]
         iters = range(len(average_accuracies))
 
         # fitnesses = [chromosome[0] for chromosome in self.best]
-        plt.plot(iters, average_accuracies)
+
+        fig, ax = plt.subplots()
+        ax.set_xlabel('Generations')
+        ax.set_ylabel('Mean Accuracy')
+
+        ax.set_xlim([0, 50])
+
+        ax.plot(iters, average_accuracies)
+
         plt.show()
