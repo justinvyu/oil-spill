@@ -68,7 +68,7 @@ class GA(object):
                     produce a child
     """
 
-    def __init__(self, nn, n_gens=70, gen_step=10, pop_size=20, cross_rate=0.9,
+    def __init__(self, nn, n_gens=60, gen_step=10, pop_size=20, cross_rate=0.9,
                  pool_size=2, elitism_length=2) :
 
         self.population = np.array([ Chromosome(nn.n_features) for i in range(pop_size) ])
@@ -293,11 +293,11 @@ class GA(object):
 
         # Random generation
         if child_1.fitness == child_2.fitness:
-            # if generation < 20:
-            #     print("Randomly generating both children --------\n")
-            #     child_1 = Chromosome(Trainer.n_features)
-            #     child_2 = Chromosome(Trainer.n_features)
-            if generation < 30:
+            if generation < 10:
+                print("Randomly generating both children --------\n")
+                child_1 = Chromosome(Trainer.n_features)
+                child_2 = Chromosome(Trainer.n_features)
+            elif generation < 30:
                 print("Randomly generating one child --------\n")
                 child_2 = Chromosome(Trainer.n_features)
             else:

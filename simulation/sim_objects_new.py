@@ -254,22 +254,23 @@ if __name__ == "__main__":
     use_cache = True
     cache = None
 
-    newfile = "02_cache.pk"
+    newfile = "cache.pk"
 
     if use_cache is True:
         with open(newfile, 'rb') as fi:
             cache = pickle.load(fi)
 
-    r.seed(50)
-    training = [OilSpill() for i in range(400)]
-    training.extend([Lookalike() for i in range(1000)])
+    # r.seed(50)
+    r.seed(40)
+    training = [OilSpill() for i in range(300)]
+    training.extend([Lookalike() for i in range(300)])
     r.shuffle(training)
 
     train_matrix_x = np.array([sample.vectorize() for sample in training]).reshape((-1, Trainer.n_features))
     train_matrix_y = np.array([sample.one_hot_vector() for sample in training]).reshape((-1, Trainer.n_classes))
     print(train_matrix_x.shape, train_matrix_y.shape)
 
-    testing = [OilSpill() for i in range(50)]
+    testing = [OilSpill() for i in range(100)]
     testing.extend([Lookalike() for i in range(100)])
     r.shuffle(testing)
 
@@ -292,10 +293,28 @@ if __name__ == "__main__":
     # count = 0.0
     # for index in positive:
     #     if correct[index] == True:
-    #         print(correct[index])
     #         count += 1.0
     #
-    # print(count / len(correct))
+    # print(count, len(positive))
+    # print(count / float(len(positive)))
+    #
+    # negative = []
+    # count = 0.0
+    # for i in range(len(test_matrix_y)):
+    #     if test_matrix_y[i][1] == 1:
+    #         negative.append(i)
+    #
+    # accuracy, correct = trainer.percent_accuracy()
+    #
+    # print("Correct Prediction? -------------")
+    # count = 0.0
+    # for index in negative:
+    #     if correct[index] == True:
+    #         count += 1.0
+    #
+    # print(count, len(negative))
+    # print(count / float(len(negative)))
+    #
     # print(accuracy)
 
     # sda = SdA(dims=[12, 11], activations=['relu', 'relu'], epoch=[1000, 500],
