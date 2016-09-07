@@ -82,6 +82,8 @@ class GA(object):
 
         self.history = [[]]
         self.best = []
+        self.present_features = []
+
         # self.best_counter = 0
         # self.best_threshold = 5
         self.gen_step = gen_step
@@ -159,6 +161,19 @@ class GA(object):
         _population = []
         chromosome_count = []
         added = False
+        self.present_features.append([0] * self.nn.n_features)
+
+        for i in range(self.nn.n_features):
+            for chromosome in self.population:
+                if chromosome.vector[i] == 1:
+                    self.present_features[len(self.present_features) - 1][i] = 1
+                    break
+
+        print("Present Features: \n")
+        for gen in self.present_features:
+            print(gen)
+            
+        # print(self.present_features)
 
         for chromosome in self.population:
             for i in range(len(_population)):
@@ -230,19 +245,20 @@ class GA(object):
                 children.append(child)
 
         self.population = children[0:pop_size]
+
         print("\nChildren:")
 
         fitness_pop = [ (self.calc_fitness(chromosome), chromosome) for chromosome in self.population ]
 
         # Adaptive Crossover Rate
 
-        accuracies = [chromosome.accuracy for chromosome in self.history[len(self.history) - 1]]
-        print(np.std(accuracies))
-        if np.std(accuracies) < self.std_threshold and self.cross_rate > 0.7:
-            self.cross_rate -= 0.1
-            print("Cross rate: " + str(self.cross_rate))
-        elif self.cross_rate < 0.9:
-            self.cross_rate += 0.1
+        # accuracies = [chromosome.accuracy for chromosome in self.history[len(self.history) - 1]]
+        # print(np.std(accuracies))
+        # if np.std(accuracies) < self.std_threshold and self.cross_rate > 0.7:
+        #     self.cross_rate -= 0.1
+        #     print("Cross rate: " + str(self.cross_rate))
+        # elif self.cross_rate < 0.9:
+        #     self.cross_rate += 0.1
 
         return self.evolve(population=fitness_pop, generation=generation + 1)
 
@@ -293,11 +309,11 @@ class GA(object):
 
         # Random generation
         if child_1.fitness == child_2.fitness:
-            if generation < 10:
-                print("Randomly generating both children --------\n")
-                child_1 = Chromosome(Trainer.n_features)
-                child_2 = Chromosome(Trainer.n_features)
-            elif generation < 30:
+            # if generation < 10:
+            #     print("Randomly generating both children --------\n")
+            #     child_1 = Chromosome(Trainer.n_features)
+            #     child_2 = Chromosome(Trainer.n_features)
+            if generation < 30:
                 print("Randomly generating one child --------\n")
                 child_2 = Chromosome(Trainer.n_features)
             else:

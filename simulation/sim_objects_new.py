@@ -261,7 +261,11 @@ if __name__ == "__main__":
             cache = pickle.load(fi)
 
     # r.seed(50)
-    r.seed(40)
+
+    # for i in range(4000, 4200):
+    r.seed(4026)
+    # print(i)
+
     training = [OilSpill() for i in range(300)]
     training.extend([Lookalike() for i in range(300)])
     r.shuffle(training)
@@ -279,6 +283,7 @@ if __name__ == "__main__":
 
     trainer = Trainer(train_matrix_x, train_matrix_y, test_matrix_x, test_matrix_y)
 
+    # trainer.train([1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0])
     # trainer.train()
     #
     # positive = []
@@ -287,6 +292,7 @@ if __name__ == "__main__":
     #     if test_matrix_y[i][0] == 1:
     #         positive.append(i)
     #
+    # # accuracy, correct = trainer.percent_accuracy([1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0])
     # accuracy, correct = trainer.percent_accuracy()
     #
     # print("Correct Prediction? -------------")
@@ -303,8 +309,6 @@ if __name__ == "__main__":
     # for i in range(len(test_matrix_y)):
     #     if test_matrix_y[i][1] == 1:
     #         negative.append(i)
-    #
-    # accuracy, correct = trainer.percent_accuracy()
     #
     # print("Correct Prediction? -------------")
     # count = 0.0
@@ -326,11 +330,12 @@ if __name__ == "__main__":
     generation, output = 0, None
     if use_cache:
         ga.history = cache[2]
+        ga.present_features = cache[3]
         generation, output = ga.evolve(cache[1], cache[0])
     else:
         generation, output = ga.evolve()
 
-    dump = [generation, output, ga.history]
+    dump = [generation, output, ga.history, ga.present_features]
     with open(newfile, 'wb') as fi:
         pickle.dump(dump, fi)
 
