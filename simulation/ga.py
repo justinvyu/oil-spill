@@ -7,14 +7,12 @@ from numpy.random import randint
 from copy import deepcopy
 
 import random as random
-import matplotlib.pyplot as plt
 from scipy import stats, integrate
 
 import math
 from enum import Enum
 
 from nn import Trainer
-import seaborn as sns
 
 class Chromosome(object):
 
@@ -341,23 +339,3 @@ class GA(object):
                     continue
                 else:
                     self.population[i].mutate(4)
-
-    def graph(self) :
-        # accuracies = [[individual.accuracy for individual in generation] for generation in self.history]
-        # median_accuracies = [np.median(x) for x in accuracies]
-        sns.set_style("darkgrid")
-
-        average_accuracies = [sum([individual.accuracy for individual in generation]) / len(generation) for generation in self.history]
-        iters = range(len(average_accuracies))
-
-        # fitnesses = [chromosome[0] for chromosome in self.best]
-
-        fig, ax = plt.subplots()
-        ax.set_xlabel('Generations')
-        ax.set_ylabel('Mean Accuracy')
-
-        ax.set_xlim([0, 50])
-
-        ax.plot(iters, average_accuracies)
-
-        plt.show()

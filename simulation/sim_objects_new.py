@@ -338,5 +338,3 @@ if __name__ == "__main__":
     dump = [generation, output, ga.history, ga.present_features]
     with open(newfile, 'wb') as fi:
         pickle.dump(dump, fi)
-
-    ga.graph()
