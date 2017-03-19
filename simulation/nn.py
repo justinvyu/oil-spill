@@ -62,7 +62,7 @@ class Trainer(object):
         self.correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(self.y_, 1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
-        self.sess.run(tf.initialize_all_variables())
+        self.sess.run(tf.global_variables_initializer())
         # self.recalibrate(Trainer.n_features)
 
     def recalibrate(self, n_features) :
@@ -113,7 +113,7 @@ class Trainer(object):
             if filtered is None:
                 return None
             self.recalibrate(n_features)
-            self.sess.run(tf.initialize_all_variables())
+            self.sess.run(tf.global_variables_initializer())
 
         for i in range(self.training_iters):
             self.sess.run(self.train_step, feed_dict={ self.x: filtered,

@@ -8,7 +8,6 @@ from copy import deepcopy
 
 import random as random
 import matplotlib.pyplot as plt
-from scipy import stats, integrate
 
 import math
 from enum import Enum
@@ -77,61 +76,23 @@ class GA(object):
         self.cross_rate = cross_rate
         self.pool_size = pool_size
         self.NUMBER_OF_GENS = n_gens
-        self.std_threshold = 0.02
         self.elitism_length = elitism_length
 
         self.history = [[]]
         self.best = []
         self.present_features = []
 
-        # self.best_counter = 0
-        # self.best_threshold = 5
         self.gen_step = gen_step
-
-        # r.seed(49)
-
         self.unique_chromosomes = []
-
-    def chunks(self, l, n):
-        """Yield successive n-sized chunks from l."""
-        random.shuffle(l)
-        step = len(l) / n
-        for i in range(0, len(l), step):
-            yield l[i:i+n]
 
     def calc_fitness(self, chromosome, t=0.115, m=0.02) :
         chromosome_str = " ".join([str(x) for x in chromosome.vector])
         print("Training: [" + chromosome_str + "] ...")
 
-        # for i in range(len(self.unique_chromosomes)):
-        #     if np.array_equal(chromosome.vector, self.unique_chromosomes[i][2].vector):
-        #         print("Already exists...")
-        #
-        #         print("Error rate (1-accuracy): " + str(1 - self.unique_chromosomes[i][1]))
-        #         print("Fitness:" + str(self.unique_chromosomes[i][0]) + "\n\n")
-        #
-        #         chromosome.accuracy = self.unique_chromosomes[i][1]
-        #         chromosome.fitness = self.unique_chromosomes[i][0]
-        #         return self.unique_chromosomes[i][0] # return fitness
-
         self.nn.train(chromosome.vector)
         print("Finished training...")
 
         accuracy = self.nn.percent_accuracy(chromosome.vector)[0]
-
-        # positive = []
-        # for i in range(len(self.nn.testing_labels)):
-        #     if self.nn.testing_labels[i][0] == 1:
-        #         positive.append(i)
-
-        # accuracy, correct = self.nn.percent_accuracy()
-
-        # count = 0.0
-        # for index in positive:
-        #     if correct[index] == True:
-        #         count += 1.0
-
-        # true_positive_rate = count / len(correct)
 
         error_rate = 1.0 - accuracy
         fitness = np.sum(chromosome.vector) + (np.exp((error_rate - t) / m) - t) / (np.e - 1)
@@ -172,7 +133,7 @@ class GA(object):
         print("Present Features: \n")
         for gen in self.present_features:
             print(gen)
-            
+
         # print(self.present_features)
 
         for chromosome in self.population:
@@ -207,7 +168,7 @@ class GA(object):
 
         # Elitism
 
-        sorted_pop = sorted(fitness_pop)
+        sorted_pop = sorted(fitness_pop, key=lambda x: x[0])
         children = [elite for elite_fit, elite in sorted_pop[:self.elitism_length]]
         self.best.append(sorted_pop[0])
         print(self.best)
@@ -250,21 +211,11 @@ class GA(object):
 
         fitness_pop = [ (self.calc_fitness(chromosome), chromosome) for chromosome in self.population ]
 
-        # Adaptive Crossover Rate
-
-        # accuracies = [chromosome.accuracy for chromosome in self.history[len(self.history) - 1]]
-        # print(np.std(accuracies))
-        # if np.std(accuracies) < self.std_threshold and self.cross_rate > 0.7:
-        #     self.cross_rate -= 0.1
-        #     print("Cross rate: " + str(self.cross_rate))
-        # elif self.cross_rate < 0.9:
-        #     self.cross_rate += 0.1
-
         return self.evolve(population=fitness_pop, generation=generation + 1)
 
     def _tournament(self, population, k) :
         sample = random.sample(population, k)
-        return sorted(sample)[0]
+        return sorted(sample, key=lambda x: x[0])[0]
 
     def _roulette(self, population) :
         print("\n--ROULETTE--\n\n")
@@ -293,12 +244,8 @@ class GA(object):
         return sorted(temp)
 
     def cross(self, generation, male, female) :
-        # locus_range = randint(5, 12)
-        # locus_left = randint(0, (male.length() - 1) - locus_range)
-        # locus_right = locus_left + locus_range
 
         locuses = random.sample(range(0, male.length() - 1), 2)
-        # locuses = [randint(0, male.length() - 1), randint(0, male.length() - 1)]
         locus_left = min(locuses)
         locus_right = max(locuses)
 
@@ -307,17 +254,17 @@ class GA(object):
         child_1 = deepcopy(male)
         child_2 = deepcopy(female)
 
-        # Random generation
-        if child_1.fitness == child_2.fitness:
-            # if generation < 10:
-            #     print("Randomly generating both children --------\n")
-            #     child_1 = Chromosome(Trainer.n_features)
-            #     child_2 = Chromosome(Trainer.n_features)
-            if generation < 30:
-                print("Randomly generating one child --------\n")
-                child_2 = Chromosome(Trainer.n_features)
-            else:
-                child_2 = self.random_chromosome()
+        # # ACR
+        # if child_1.fitness == child_2.fitness:
+        #     # if generation < 10:
+        #     #     print("Randomly generating both children --------\n")
+        #     #     child_1 = Chromosome(Trainer.n_features)
+        #     #     child_2 = Chromosome(Trainer.n_features)
+        #     if generation < 30:
+        #         print("Randomly generating one child --------\n")
+        #         child_2 = Chromosome(Trainer.n_features)
+        #     else:
+        #         child_2 = self.random_chromosome()
 
         child_1.replace_range(female, locus_left, locus_right)
         child_2.replace_range(male, locus_left, locus_right)
@@ -343,14 +290,10 @@ class GA(object):
                     self.population[i].mutate(4)
 
     def graph(self) :
-        # accuracies = [[individual.accuracy for individual in generation] for generation in self.history]
-        # median_accuracies = [np.median(x) for x in accuracies]
         sns.set_style("darkgrid")
 
         average_accuracies = [sum([individual.accuracy for individual in generation]) / len(generation) for generation in self.history]
         iters = range(len(average_accuracies))
-
-        # fitnesses = [chromosome[0] for chromosome in self.best]
 
         fig, ax = plt.subplots()
         ax.set_xlabel('Generations')

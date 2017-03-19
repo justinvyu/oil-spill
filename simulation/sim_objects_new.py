@@ -13,10 +13,6 @@ from sda import *
 
 import pickle
 
-class ObjectType(Enum):
-    spill = 0
-    lookalike = 1
-
 class OceanObject(object):
     """Represents an ocean dark spot, with basic features shared by oil spills
     and lookalikes.
@@ -43,7 +39,7 @@ class OceanObject(object):
         gradient standard deviation (GSd): std of border gradient values
     """
 
-    def __init__(self, type=ObjectType.spill) :
+    def __init__(self, type=0) :
         self.type = type
 
         self.A = None
@@ -86,7 +82,7 @@ class OceanObject(object):
 
     @staticmethod
     def random_feature(feature_stats) :
-        proposed = r.normal(feature_stats['MEAN'], feature_stats['STD'])
+        proposed = random.gauss(feature_stats['MEAN'], feature_stats['STD'])
         return proposed
 
 class OilSpill(OceanObject):
@@ -120,7 +116,7 @@ class OilSpill(OceanObject):
     THM = { 'MIN': 18.36, 'MAX': 130.41, 'MEAN': 44.52, 'STD': 17.69 }
 
     def __init__(self) :
-        OceanObject.__init__(self, ObjectType.spill)
+        OceanObject.__init__(self, 0)
 
         self.A = self.random_feature(OilSpill.A)
         while self.A <= 0:
@@ -151,7 +147,7 @@ class OilSpill(OceanObject):
 
         self.ConMax = self.random_feature(OilSpill.CMAX)
         self.ConMean = self.random_feature(OilSpill.CMEAN)
-        while self.GMax < self.GMean:
+        while self.ConMax < self.ConMean:
             self.ConMax = self.random_feature(OilSpill.CMAX)
 
         self.ConRaMe = self.random_feature(OilSpill.CRAME)
@@ -200,7 +196,7 @@ class Lookalike(OceanObject):
     THM = { 'MIN': 19.22, 'MAX': 91.58, 'MEAN': 47.42, 'STD': 14.85 }
 
     def __init__(self) :
-        OceanObject.__init__(self, ObjectType.lookalike)
+        OceanObject.__init__(self, 1)
 
         self.A = self.random_feature(Lookalike.A)
         while self.A <= 0:
@@ -231,7 +227,7 @@ class Lookalike(OceanObject):
 
         self.ConMax = self.random_feature(Lookalike.CMAX)
         self.ConMean = self.random_feature(Lookalike.CMEAN)
-        while self.GMax < self.GMean:
+        while self.ConMax < self.ConMean:
             self.ConMax = self.random_feature(Lookalike.CMAX)
 
         self.ConRaMe = self.random_feature(Lookalike.CRAME)
@@ -251,21 +247,21 @@ class Lookalike(OceanObject):
 
 if __name__ == "__main__":
 
-    use_cache = True
+    use_cache = False
     cache = None
 
-    newfile = "cache.pk"
+    newfile = "06_cache.pk"
 
     if use_cache is True:
         with open(newfile, 'rb') as fi:
             cache = pickle.load(fi)
 
-    # r.seed(50)
-
-    # for i in range(4000, 4200):
-    r.seed(4026)
-    # print(i)
-
+    r.seed(50)
+    #
+    # # for i in range(4000, 4200):
+    # r.seed(4026)
+    # # print(i)
+    #
     training = [OilSpill() for i in range(300)]
     training.extend([Lookalike() for i in range(300)])
     r.shuffle(training)
@@ -273,9 +269,75 @@ if __name__ == "__main__":
     train_matrix_x = np.array([sample.vectorize() for sample in training]).reshape((-1, Trainer.n_features))
     train_matrix_y = np.array([sample.one_hot_vector() for sample in training]).reshape((-1, Trainer.n_classes))
     print(train_matrix_x.shape, train_matrix_y.shape)
-
+    #
+    # random.seed(40)
     testing = [OilSpill() for i in range(100)]
-    testing.extend([Lookalike() for i in range(100)])
+    lookalikes = [Lookalike() for i in range(100)]
+    #
+    # # Area
+    # oil_areas = [spill.vectorize()[0] for spill in testing]
+    # lookalike_areas = [lookalike.vectorize()[0] for lookalike in lookalikes]
+    #
+    # # OMe
+    # oil_ome = [spill.vectorize()[6] for spill in testing]
+    # lookalike_ome = [lookalike.vectorize()[6] for lookalike in lookalikes]
+    #
+    # # fig, ax = plt.subplots()
+    # f1 = plt.figure()
+    # f2 = plt.figure()
+    #
+    # ax1 = f1.add_subplot(111)
+    # ax2 = f2.add_subplot(111)
+    #
+    # # bins = np.linspace(0, 90, 20)
+    #
+    # # Area
+    # hist_min = 0
+    # hist_max = 350000
+    # num_bins = 20
+    # bins = np.linspace(hist_min, hist_max, num_bins)
+    #
+    # # OMe
+    # # hist_min = 0
+    # # hist_max = 90
+    # # num_bins = 16
+    # # bins = np.linspace(hist_min, hist_max, num_bins)
+    #
+    # # Oil Spill
+    #
+    # # ax.set_ylim([0, 16])
+    # y, bin_edges, o_patches = ax2.hist(oil_areas, edgecolor='w', bins=bins, label='Oil Spill')
+    # bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+    # bin_centers[0] = hist_min
+    # bin_centers[len(bin_centers) - 1] = hist_max
+    # ax1.plot(bin_centers, y, '-', color='none')
+    # ax1.fill_between(bin_centers, 0, y, alpha=0.6, label='Oil Spill', color="red")
+    #
+    # # for p in o_patches:
+    # #     plt.setp(p, 'facecolor', 'r')
+    #
+    # # Look-alike
+    #
+    # y, bin_edges, l_patches = ax2.hist(lookalike_areas, bins=bins, linewidth=2, alpha=0.5, label='Lookalike', histtype='step')
+    # bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+    # bin_centers[0] = hist_min
+    # bin_centers[len(bin_centers) - 1] = hist_max
+    # ax1.plot(bin_centers, y, '-', color='none')
+    #
+    # # for p in l_patches:
+    # #     plt.setp(p, 'facecolor', 'grey')
+    #
+    # ax1.fill_between(bin_centers, 0, y, alpha=0.5, label='Look-alike', color="grey")
+    #
+    # ax1.legend(loc='upper right')
+    # ax1.set_xlabel('Dark object mean backscatter value in dB', fontsize=13)
+    # ax1.set_ylabel('Number of generated dark objects', fontsize=13)
+    #
+    # ax1.legend(loc=1,prop={'size':12})
+    #
+    # plt.show()
+
+    testing.extend(lookalikes)
     r.shuffle(testing)
 
     test_matrix_x = np.array([sample.vectorize() for sample in testing]).reshape((-1, Trainer.n_features))
@@ -320,11 +382,6 @@ if __name__ == "__main__":
     # print(count / float(len(negative)))
     #
     # print(accuracy)
-
-    # sda = SdA(dims=[12, 11], activations=['relu', 'relu'], epoch=[1000, 500],
-    #           loss='cross-entropy', lr=0.007, batch_size=50, print_step=200)
-    #
-    # sda.fit(train_matrix_x)
 
     ga = GA(trainer)
     generation, output = 0, None
